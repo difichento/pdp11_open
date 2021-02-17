@@ -16,12 +16,12 @@ void mem_test()
     word w0 = 0xab0f;
     b_write(adr0, b0);
     byte bres0 = b_read(adr0);      // test 1, bw/br
-    printf("t1:\n%02hhx = %02hhx = %02hhx\n", b0, mem[adr0], bres0);     // test 1
+    //printf("t1:\n%02hhx = %02hhx = %02hhx\n", b0, mem[adr0], bres0);     // test 1
     assert(bres0 == b0);
 
     b_write(adr0 + 1, b1);
     word wres0 = w_read(adr0);      // test 2, bw/bw/wr
-    printf("t2:\n%02hhx%02hhx = %02hhx%02hhx = %04hx\n", b1, b0, mem[adr0 + 1], mem[adr0], wres0);
+    //printf("t2:\n%02hhx%02hhx = %02hhx%02hhx = %04hx\n", b1, b0, mem[adr0 + 1], mem[adr0], wres0);
     assert(wres0 == w0);
 
     Adress adr1 = 4;
@@ -31,18 +31,36 @@ void mem_test()
 
     w_write(adr1, w1);
     word wres1 = w_read(adr1);      // test 3, ww/wr
-    printf("t3:\n%04hx = %02hhx%02hhx = %04hx\n", w1, mem[adr1 + 1], mem[adr1], wres1);
+    //printf("t3:\n%04hx = %02hhx%02hhx = %04hx\n", w1, mem[adr1 + 1], mem[adr1], wres1);
     assert(w1 == wres1);
 
     byte b4 = b_read(adr1 + 1);
     byte b5 = b_read(adr1);         // test 4, ww/br
-    printf("t3:\n%04hx = %02hhx%02hhx = %02hhx%02hhx\n", w1, b2, b3, b4, b5);
+    //printf("t3:\n%04hx = %02hhx%02hhx = %02hhx%02hhx\n", w1, b2, b3, b4, b5);
     assert(b4 == b2 && b5 == b3);
 }
 
-int main()
+void load_file(const char *filename)
 {
-    mem_test();
+    FILE *fin = fopen(filename, "r");
+    Adress st_adr;
+    word N;
+    while (fscanf(fin, "%hx", &st_adr) != EOF) {
+        fscanf(fin, "%hx", &N);
+        printf("start adress: %d\n", st_adr);
+        printf("N: %d\n", N);
+        for (int i = 0; i < N; ++i) {
+            byte temp;
+            fscanf(fin, "%hhx", &temp);
+            b_write(st_adr + i, temp);
+            printf("Written %hhx to %d\n", temp, st_adr + i);
+        }
+    }
+}
+
+int main(int argc, char *argv[])
+{
+    load_file("test1.txt");
     return 0;
 }
 
