@@ -9,7 +9,7 @@ void b_write(Adress adr, byte b);
 
 byte b_read(Adress adr);
 
-void w_write(Adress adr, word b);
+void w_write(Adress adr, word w);
 
 word w_read(Adress adr);
 
