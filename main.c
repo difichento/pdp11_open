@@ -6,6 +6,7 @@
 #define BYTE_SIZE 8
 
 byte mem[MEM_SIZE];
+word reg[8];
 
 void mem_test()
 {
@@ -47,20 +48,21 @@ void load_file(const char *filename)
     word N;
     while (fscanf(fin, "%hx", &st_adr) != EOF) {
         fscanf(fin, "%hx", &N);
-        printf("start adress: %d\n", st_adr);
-        printf("N: %d\n", N);
+        //printf("start adress: %d\n", st_adr);
+        //printf("N: %d\n", N);
         for (int i = 0; i < N; ++i) {
             byte temp;
             fscanf(fin, "%hhx", &temp);
             b_write(st_adr + i, temp);
-            printf("Written %hhx to %d\n", temp, st_adr + i);
+            //printf("Written %02hhx to %d\n", temp, st_adr + i);
         }
     }
 }
 
 int main(int argc, char *argv[])
 {
-    load_file("test1.txt");
+    load_file("tests/test2/test.o");
+    run();
     return 0;
 }
 
