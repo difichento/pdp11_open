@@ -5,6 +5,19 @@ typedef unsigned char byte;
 typedef unsigned short word;
 typedef word Adress;
 
+typedef struct {
+    word mask;
+    word opcode;
+    char *name;
+
+    void (*func)(void);
+} Commands;
+
+typedef struct {
+    word val;
+    word adr;
+} Args;
+
 void b_write(Adress adr, byte b);
 
 byte b_read(Adress adr);
@@ -15,12 +28,8 @@ word w_read(Adress adr);
 
 void run();
 
-typedef struct {
-    word mask;
-    word opcode;
-    char *name;
+Args get_mr(word w);
 
-    void (*func)(void);
-} Commands;
+void print_reg();
 
 #endif

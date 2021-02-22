@@ -7,6 +7,7 @@
 
 byte mem[MEM_SIZE];
 word reg[8];
+Args ss, dd;
 
 void mem_test()
 {
@@ -48,15 +49,16 @@ void load_file(const char *filename)
     word N;
     while (fscanf(fin, "%hx", &st_adr) != EOF) {
         fscanf(fin, "%hx", &N);
-        //printf("start adress: %d\n", st_adr);
-        //printf("N: %d\n", N);
+        printf("start adress: %o\n", st_adr);
+        printf("N: %d\n", N);
         for (int i = 0; i < N; ++i) {
             byte temp;
             fscanf(fin, "%hhx", &temp);
             b_write(st_adr + i, temp);
-            //printf("Written %02hhx to %d\n", temp, st_adr + i);
+            printf("Written %02hhx to %o\n", temp, st_adr + i);
         }
     }
+    printf("\n");
 }
 
 int main(int argc, char *argv[])
@@ -85,4 +87,11 @@ void w_write(Adress adr, word w)
 word w_read(Adress adr)
 {
     return mem[adr] | ((word) mem[adr + 1] << BYTE_SIZE);
+}
+
+void print_reg()
+{
+    for (int i = 0; i < 7; ++i) {
+        printf("reg[%d]: %x\n", i, reg[i]);
+    }
 }
