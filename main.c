@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <assert.h>
 #include "pdp11.h"
-
-#define MEM_SIZE 64 * 1024
-#define BYTE_SIZE 8
+#include <stdarg.h>
+#include <stdlib.h>
+#include <errno.h>
 
 byte mem[MEM_SIZE];
 word reg[8];
@@ -18,12 +18,12 @@ void mem_test()
     word w0 = 0xab0f;
     b_write(adr0, b0);
     byte bres0 = b_read(adr0);      // test 1, bw/br
-    //printf("t1:\n%02hhx = %02hhx = %02hhx\n", b0, mem[adr0], bres0);     // test 1
+    //trace("t1:\n%02hhx = %02hhx = %02hhx\n", b0, mem[adr0], bres0);     // test 1
     assert(bres0 == b0);
 
     b_write(adr0 + 1, b1);
     word wres0 = w_read(adr0);      // test 2, bw/bw/wr
-    //printf("t2:\n%02hhx%02hhx = %02hhx%02hhx = %04hx\n", b1, b0, mem[adr0 + 1], mem[adr0], wres0);
+    //trace("t2:\n%02hhx%02hhx = %02hhx%02hhx = %04hx\n", b1, b0, mem[adr0 + 1], mem[adr0], wres0);
     assert(wres0 == w0);
 
     Adress adr1 = 4;
@@ -33,29 +33,34 @@ void mem_test()
 
     w_write(adr1, w1);
     word wres1 = w_read(adr1);      // test 3, ww/wr
-    //printf("t3:\n%04hx = %02hhx%02hhx = %04hx\n", w1, mem[adr1 + 1], mem[adr1], wres1);
+    //trace("t3:\n%04hx = %02hhx%02hhx = %04hx\n", w1, mem[adr1 + 1], mem[adr1], wres1);
     assert(w1 == wres1);
 
     byte b4 = b_read(adr1 + 1);
     byte b5 = b_read(adr1);         // test 4, ww/br
-    //printf("t3:\n%04hx = %02hhx%02hhx = %02hhx%02hhx\n", w1, b2, b3, b4, b5);
+    //trace("t3:\n%04hx = %02hhx%02hhx = %02hhx%02hhx\n", w1, b2, b3, b4, b5);
     assert(b4 == b2 && b5 == b3);
 }
 
 void load_file(const char *filename)
 {
     FILE *fin = fopen(filename, "r");
+    if (fin == NULL) {
+        perror(filename);
+        exit(errno);
+    }
+
     Adress st_adr;
     word N;
     while (fscanf(fin, "%hx", &st_adr) != EOF) {
         fscanf(fin, "%hx", &N);
-        printf("start adress: %o\n", st_adr);
-        printf("N: %d\n", N);
+        //trace("start adress: %o\n", st_adr);
+        //trace("N: %d\n", N);
         for (int i = 0; i < N; ++i) {
             byte temp;
             fscanf(fin, "%hhx", &temp);
             b_write(st_adr + i, temp);
-            printf("Written %02hhx to %o\n", temp, st_adr + i);
+            //trace("Written %02hhx to %o\n", temp, st_adr + i);
         }
     }
     printf("\n");
@@ -64,6 +69,9 @@ void load_file(const char *filename)
 int main(int argc, char *argv[])
 {
     load_file("tests/test2/test.o");
+
+    print_mem();
+    trace("\n");
     run();
     return 0;
 }
@@ -91,7 +99,16 @@ word w_read(Adress adr)
 
 void print_reg()
 {
-    for (int i = 0; i < 7; ++i) {
-        printf("reg[%d]: %x\n", i, reg[i]);
+    for (int i = 0; i < REG_NUM; ++i) {
+        printf("reg[%d]: %06o\n", i, reg[i]);
     }
+}
+
+
+void trace(char *format, ...)
+{
+    va_list ptr;
+    va_start(ptr, format);
+    vprintf(format, ptr);
+    va_end(ptr);
 }

@@ -1,6 +1,11 @@
 #ifndef PDP11_H
 #define PDP11_H
+
 #define pc reg[7]
+#define MEM_SIZE 64 * 1024
+#define BYTE_SIZE 8
+#define REG_NUM 8
+
 typedef unsigned char byte;
 typedef unsigned short word;
 typedef word Adress;
@@ -31,5 +36,9 @@ void run();
 Args get_mr(word w);
 
 void print_reg();
+
+void trace(char *format, ...);
+
+void print_mem();
 
 #endif
