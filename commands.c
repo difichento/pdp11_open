@@ -8,32 +8,23 @@ extern Args ss, dd;
 
 void mov()
 {
-    trace("mov\n");
-    if (dd.adr < 8)
-        reg[dd.adr] = ss.val;
-    else
-        w_write(dd.adr, ss.val);
+    w_write(dd.adr, ss.val);
 }
 
 void halt()
 {
-    trace("halt\n\n");
+    trace("\nREG:\n");
     print_reg();
     exit(0);
 }
 
 void add()
 {
-    trace("add\n");
-    if (dd.adr < 8)
-        reg[dd.adr] += ss.val;
-    else
-        w_write(dd.adr, w_read(dd.adr) + ss.val);
+    w_write(dd.adr, w_read(dd.adr) + ss.val);
 }
 
 void unknown()
 {
-    trace("unknown\n");
 }
 
 

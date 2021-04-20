@@ -4,13 +4,14 @@
 #define pc reg[7]
 #define MEM_SIZE 64 * 1024
 #define BYTE_SIZE 8
-#define REG_NUM 8
+#define REG_SIZE 8
 
 typedef unsigned char byte;
 typedef unsigned short word;
 typedef word Adress;
 
-typedef struct {
+typedef struct
+{
     word mask;
     word opcode;
     char *name;
@@ -18,7 +19,8 @@ typedef struct {
     void (*func)(void);
 } Commands;
 
-typedef struct {
+typedef struct
+{
     word val;
     word adr;
 } Args;
@@ -39,6 +41,6 @@ void print_reg();
 
 void trace(char *format, ...);
 
-void print_mem();
+void print_mem(word start_adr, word end_adr);
 
 #endif

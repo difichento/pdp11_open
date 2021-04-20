@@ -24,77 +24,84 @@ Args get_mr(word w)     // get mode && arg
             res.val = w_read(res.adr);
             break;
         case 2:
-            if (r == 7) {
-                reg[r] += 2;
-                res.adr = reg[r];
-                res.val = w_read(res.adr);      //  #nn
+            res.adr = reg[r];
+            res.val = w_read(res.adr);      //  #nn
+            reg[r] += 2;
+            if (r == 7)
                 trace("#%o ", res.val);
-                break;
-            } else {
-                res.adr = reg[r];
-                res.val = w_read(res.adr);      //  (Rn)+
-                trace("(R%o)+ ", r);
-                reg[r] += 2;
-                break;
-            }
+            else
+                trace("(R%d) ", r);
+            break;
         case 3:
-            if (r == 7) {
-
-                res.adr = reg[r];
-                res.val = w_read(res.adr + 2);      //  @#nn
-                res.val = w_read(res.val);
-                trace("@#%o ", res.val);
-                reg[r] += 2;
-                break;
-            } else {
-                res.adr = reg[r];
-                res.val = w_read(res.adr);      //  @(Rn)+
-                res.val = w_read(res.val);
+            res.adr = reg[r];
+            res.adr = w_read(res.adr);      //  @(Rn)+
+            word tmp_for_trace = res.adr;
+            res.val = w_read(res.adr);
+            reg[r] += 2;
+            if (r == 7)
+                trace("@#%o ", tmp_for_trace);
+            else
                 trace("@(R%o)+ ", r);
-                reg[r] += 2;
-                break;
-            }
+            break;
         case 4:
-            res.adr = reg[r] - 2;
+            reg[r] -= 2;
+            res.adr = reg[r];
             res.val = w_read(res.adr);      //  -(Rn)
-            trace("-(R%o)+ ", r);
+            trace("-(R%o) ", r);
             break;
         case 5:
-            res.adr = reg[r] - 2;
-            res.val = w_read(res.adr);      //  @-(Rn)
-            res.val = w_read(res.val);
-            trace("@-(R%o)+ ", r);
+            reg[r] -= 2;
+            res.adr = reg[r];
+            res.adr = w_read(res.adr);      //  @-(Rn)
+            res.val = w_read(res.adr);
+            trace("@-(R%o) ", r);
             break;
+        case 6: {
+            word shift = w_read(pc);
+            pc += 2;
+            res.adr = reg[r] + shift;
+            res.val = w_read(res.adr);
+            if (r == 7)
+                trace("%o ", shift);
+            else
+                trace("%o(R%o) ", shift, r);
+            break;
+        }
+        case 7: {
+            word shift = w_read(pc);
+            pc += 2;
+            res.adr = shift + reg[r];
+            res.adr = w_read(res.adr);
+            res.val = w_read(res.adr);
+            if (r == 7)
+                trace("@%o ", shift);
+            else
+                trace("@%o(R%o) ", shift, r);
+            break;
+        }
+
     }
     return res;
 }
 
-void print_mem()
-{
-    trace("MEM:\n");
-    int a = 01000;
-    int b = w_read(a);
-    while (b != 0) {
-        trace("%06o\n", b);
-        a += 2;
-        b = w_read(a);
-    }
-    trace("\n");
-}
 
 void run()
 {
+    trace("RUN:\n");
     pc = 01000;
-
-    for (; pc < MEM_SIZE; pc += 2) {
+    for (; pc < MEM_SIZE;) {
         word w = w_read(pc);
-        trace("%06o %06o ", pc, w);
+        pc += 2;
+        trace("%06o %06o: ", pc, w);
         int i = 0;
         while (1) {
             Commands com = comms[i];
             if ((w & com.mask) == com.opcode) {
+                trace(com.name);
+                trace(" ");
                 ss = get_mr(w >> 6);
                 dd = get_mr(w);
+                trace("\n");
                 com.func();
                 break;
             }

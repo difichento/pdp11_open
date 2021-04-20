@@ -68,9 +68,8 @@ void load_file(const char *filename)
 
 int main(int argc, char *argv[])
 {
-    load_file("tests/test2/test.o");
-
-    print_mem();
+    load_file("tests/add_mov_test/add_mov_test.o");
+    print_mem(01000, 01100);
     trace("\n");
     run();
     return 0;
@@ -88,19 +87,37 @@ byte b_read(Adress adr)
 
 void w_write(Adress adr, word w)
 {
-    mem[adr] = (byte) w;
-    mem[adr + 1] = (byte) (w >> BYTE_SIZE);
+    if (adr < REG_SIZE)
+        reg[adr] = w;
+    else {
+        mem[adr] = (byte) w;
+        mem[adr + 1] = (byte) (w >> BYTE_SIZE);
+    }
 }
 
 word w_read(Adress adr)
 {
-    return mem[adr] | ((word) mem[adr + 1] << BYTE_SIZE);
+    if (adr < REG_SIZE)
+        return reg[adr];
+    else
+        return mem[adr] | ((word) mem[adr + 1] << BYTE_SIZE);
 }
 
 void print_reg()
 {
-    for (int i = 0; i < REG_NUM; ++i) {
+    for (int i = 0; i < REG_SIZE; ++i) {
         printf("reg[%d]: %06o\n", i, reg[i]);
+    }
+}
+
+void print_mem(word start_adr, word end_adr)
+{
+    trace("MEM:\n");
+    int adr = start_adr;
+    while (adr <= end_adr) {
+        word w = w_read(adr);
+        trace("%06o: %06o\n", adr, w);
+        adr += 2;
     }
 }
 
