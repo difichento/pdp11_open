@@ -15,8 +15,8 @@ typedef struct
     word mask;
     word opcode;
     char *name;
-
     void (*func)(void);
+    word params;
 } Commands;
 
 typedef struct
@@ -35,7 +35,7 @@ word w_read(Adress adr);
 
 void run();
 
-Args get_mr(word w);
+Args get_ss_dd(word w);
 
 void print_reg();
 

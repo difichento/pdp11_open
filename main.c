@@ -7,7 +7,7 @@
 
 byte mem[MEM_SIZE];
 word reg[8];
-Args ss, dd;
+Args ss, dd, r, nn, B;
 
 void mem_test()
 {
@@ -68,7 +68,7 @@ void load_file(const char *filename)
 
 int main(int argc, char *argv[])
 {
-    load_file("tests/add_mov_test/add_mov_test.o");
+    load_file("tests/sob_test/sob_test.o");
     print_mem(01000, 01100);
     trace("\n");
     run();
@@ -106,8 +106,9 @@ word w_read(Adress adr)
 void print_reg()
 {
     for (int i = 0; i < REG_SIZE; ++i) {
-        printf("reg[%d]: %06o\n", i, reg[i]);
+        trace("R%d = %06o ", i, reg[i]);
     }
+    trace("\n");
 }
 
 void print_mem(word start_adr, word end_adr)

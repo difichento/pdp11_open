@@ -4,9 +4,9 @@
 extern word reg[];
 extern byte mem[];
 extern Commands comms[];
-extern Args ss, dd;
+extern Args ss, dd, nn, r, B;
 
-Args get_mr(word w)     // get mode && arg
+Args get_ss_dd(word w)     // get mode && arg
 {
     Args res;
     int r = w & 7;      // reg number
@@ -22,6 +22,7 @@ Args get_mr(word w)     // get mode && arg
         case 1:             //  (Rn)
             res.adr = reg[r];
             res.val = w_read(res.adr);
+            trace("(R%d) ", r);
             break;
         case 2:
             res.adr = reg[r];
@@ -30,7 +31,7 @@ Args get_mr(word w)     // get mode && arg
             if (r == 7)
                 trace("#%o ", res.val);
             else
-                trace("(R%d) ", r);
+                trace("(R%d)+ ", r);
             break;
         case 3:
             res.adr = reg[r];
@@ -84,6 +85,46 @@ Args get_mr(word w)     // get mode && arg
     return res;
 }
 
+void get_nn(word w)
+{
+    nn.val = w & 077;
+}
+
+void get_r(word w)
+{
+    r.val = (w >> 6) & 07;
+}
+
+void get_b(word w)
+{
+    B.val = (w >> 15) & 7;
+}
+
+int need_ss(Commands com)
+{
+    return (com.params & 07) == 1;
+}
+
+int need_dd(Commands com)
+{
+    return ((com.params >> 3) & 7) == 1;
+}
+
+int need_b(Commands com)
+{
+    return ((com.params >> 6) & 7) == 1;
+}
+
+int need_nn(Commands com)
+{
+    return ((com.params >> 9) & 7) == 1;
+}
+
+int need_r(Commands com)
+{
+    return ((com.params >> 12) & 7) == 1;
+}
+
 
 void run()
 {
@@ -99,10 +140,21 @@ void run()
             if ((w & com.mask) == com.opcode) {
                 trace(com.name);
                 trace(" ");
-                ss = get_mr(w >> 6);
-                dd = get_mr(w);
-                trace("\n");
+                if (need_ss(com))
+                    ss = get_ss_dd(w >> 6);
+                if (need_dd(com))
+                    dd = get_ss_dd(w);
+                if (need_b(com))
+                    get_b(w);
+                if (need_r(com))
+                    get_r(w);
+                if (need_nn(com))
+                    get_nn(w);
+
                 com.func();
+                trace("\n");
+                print_reg();
+                trace("\n");
                 break;
             }
             i++;

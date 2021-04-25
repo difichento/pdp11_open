@@ -1,0 +1,12 @@
+.= 200
+A: .WORD 34, 12, -1, 66
+N: .WORD 4
+.= 1000
+mov @#N, R1
+mov #A, R2
+clr R0
+LOOP:
+mov (R2)+, R3
+add R3, R0
+sob R1, LOOP
+halt
