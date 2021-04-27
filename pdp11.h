@@ -15,7 +15,9 @@ typedef struct
     word mask;
     word opcode;
     char *name;
+
     void (*func)(void);
+
     word params;
 } Commands;
 
@@ -42,5 +44,7 @@ void print_reg();
 void trace(char *format, ...);
 
 void print_mem(word start_adr, word end_adr);
+
+int sign(byte b);
 
 #endif

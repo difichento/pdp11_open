@@ -2,12 +2,14 @@
 #include <assert.h>
 #include "pdp11.h"
 #include <stdarg.h>
+#include <string.h>
 #include <stdlib.h>
 #include <errno.h>
 
 byte mem[MEM_SIZE];
 word reg[8];
-Args ss, dd, r, nn, B;
+Args ss, dd, r, nn, b_flag, xx;
+char N_flag, Z_flag, V_flag, C_flag;
 
 void mem_test()
 {
@@ -68,7 +70,16 @@ void load_file(const char *filename)
 
 int main(int argc, char *argv[])
 {
-    load_file("tests/sob_test/sob_test.o");
+    //printf("%s",strcat(strcat(argv[1], "/"), "///"));
+    char *str = malloc(sizeof(char) * 100);
+    str = strcat(str, "tests/");
+    str = strcat(str, argv[1]);
+    str = strcat(str, "/");
+    str = strcat(str, argv[1]);
+    str = strcat(str, ".pdp.o");
+    //printf("%s\n", str);
+    load_file(str);
+    w_write(0177564, 0x0000 + 0x80);
     print_mem(01000, 01100);
     trace("\n");
     run();
@@ -77,7 +88,20 @@ int main(int argc, char *argv[])
 
 void b_write(Adress adr, byte b)
 {
-    mem[adr] = b;
+    if (adr >= 8) {
+        if (adr % 2 == 0) {
+            if (sign(b))
+                mem[adr + 1] = -1;
+            else
+                mem[adr + 1] = 0;
+        }
+        mem[adr] = b;
+    } else {
+        if (sign(b))
+            reg[adr] = 0xff00 + b;
+        else
+            reg[adr] = 0x0000 + b;
+    }
 }
 
 byte b_read(Adress adr)
@@ -88,7 +112,7 @@ byte b_read(Adress adr)
 void w_write(Adress adr, word w)
 {
     if (adr < REG_SIZE)
-        reg[adr] = w;
+        reg[adr] = (word) w;
     else {
         mem[adr] = (byte) w;
         mem[adr + 1] = (byte) (w >> BYTE_SIZE);
@@ -107,6 +131,8 @@ void print_reg()
 {
     for (int i = 0; i < REG_SIZE; ++i) {
         trace("R%d = %06o ", i, reg[i]);
+        if (i == 3)
+            trace("\n");
     }
     trace("\n");
 }
@@ -129,4 +155,9 @@ void trace(char *format, ...)
     va_start(ptr, format);
     vprintf(format, ptr);
     va_end(ptr);
+}
+
+int sign(byte b)
+{
+    return (b >> 7) & 1;
 }

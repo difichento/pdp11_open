@@ -4,7 +4,7 @@
 extern word reg[];
 extern byte mem[];
 extern Commands comms[];
-extern Args ss, dd, nn, r, B;
+extern Args ss, dd, nn, r, b_flag, xx;
 
 Args get_ss_dd(word w)     // get mode && arg
 {
@@ -27,7 +27,10 @@ Args get_ss_dd(word w)     // get mode && arg
         case 2:
             res.adr = reg[r];
             res.val = w_read(res.adr);      //  #nn
-            reg[r] += 2;
+            if (b_flag.val)
+                reg[r] += 1;
+            else
+                reg[r] += 2;
             if (r == 7)
                 trace("#%o ", res.val);
             else
@@ -38,20 +41,29 @@ Args get_ss_dd(word w)     // get mode && arg
             res.adr = w_read(res.adr);      //  @(Rn)+
             word tmp_for_trace = res.adr;
             res.val = w_read(res.adr);
-            reg[r] += 2;
+            if (b_flag.val)
+                reg[r] += 1;
+            else
+                reg[r] += 2;
             if (r == 7)
                 trace("@#%o ", tmp_for_trace);
             else
                 trace("@(R%o)+ ", r);
             break;
         case 4:
-            reg[r] -= 2;
+            if (b_flag.val)
+                reg[r] -= 1;
+            else
+                reg[r] -= 2;
             res.adr = reg[r];
             res.val = w_read(res.adr);      //  -(Rn)
             trace("-(R%o) ", r);
             break;
         case 5:
-            reg[r] -= 2;
+            if (b_flag.val)
+                reg[r] -= 1;
+            else
+                reg[r] -= 2;
             res.adr = reg[r];
             res.adr = w_read(res.adr);      //  @-(Rn)
             res.val = w_read(res.adr);
@@ -82,6 +94,8 @@ Args get_ss_dd(word w)     // get mode && arg
         }
 
     }
+    if (pc % 2 == 1)
+        pc++;
     return res;
 }
 
@@ -97,7 +111,12 @@ void get_r(word w)
 
 void get_b(word w)
 {
-    B.val = (w >> 15) & 7;
+    b_flag.val = (w >> 15) & 7;
+}
+
+void get_xx(word w)
+{
+    xx.val = w & 0377;
 }
 
 int need_ss(Commands com)
@@ -125,12 +144,17 @@ int need_r(Commands com)
     return ((com.params >> 12) & 7) == 1;
 }
 
+int need_xx(Commands com)
+{
+    return ((com.params >> 15) & 1) == 1;
+}
 
 void run()
 {
     trace("RUN:\n");
     pc = 01000;
     for (; pc < MEM_SIZE;) {
+
         word w = w_read(pc);
         pc += 2;
         trace("%06o %06o: ", pc, w);
@@ -139,17 +163,25 @@ void run()
             Commands com = comms[i];
             if ((w & com.mask) == com.opcode) {
                 trace(com.name);
-                trace(" ");
-                if (need_ss(com))
-                    ss = get_ss_dd(w >> 6);
-                if (need_dd(com))
-                    dd = get_ss_dd(w);
-                if (need_b(com))
+                if (need_b(com)) {
                     get_b(w);
+                    if (b_flag.val)
+                        trace("b");
+                }
+                trace(" ");
+                if (need_ss(com)) {
+                    ss = get_ss_dd(w >> 6);
+                }
+                if (need_dd(com)) {
+                    dd = get_ss_dd(w);
+                }
+
                 if (need_r(com))
                     get_r(w);
                 if (need_nn(com))
                     get_nn(w);
+                if (need_xx(com))
+                    get_xx(w);
 
                 com.func();
                 trace("\n");
