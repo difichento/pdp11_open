@@ -10,6 +10,8 @@ byte mem[MEM_SIZE];
 word reg[8];
 Args ss, dd, r, nn, b_flag, xx;
 char N_flag, Z_flag, V_flag, C_flag;
+char trace_flag = 0;
+char log_flag = 0;
 
 void mem_test()
 {
@@ -70,17 +72,20 @@ void load_file(const char *filename)
 
 int main(int argc, char *argv[])
 {
-    //printf("%s",strcat(strcat(argv[1], "/"), "///"));
-    char *str = malloc(sizeof(char) * 100);
-    str = strcat(str, "tests/");
-    str = strcat(str, argv[1]);
-    str = strcat(str, "/");
-    str = strcat(str, argv[1]);
-    str = strcat(str, ".pdp.o");
-    //printf("%s\n", str);
-    load_file(str);
-    w_write(0177564, 0x0000 + 0x80);
-    print_mem(01000, 01100);
+    for (int i = 1; i < argc; ++i) {
+        if (argv[i][0] == '-') {
+            if (argv[i][1] == 't')
+                trace_flag = 1;
+            else if (argv[i][1] == 'l')
+                log_flag = 1;
+            else {
+                printf("unknown flag\n");
+                return 0;
+            }
+        } else
+            load_file(argv[i]);
+    }
+    //print_mem(01000, 01100);
     trace("\n");
     run();
     return 0;
@@ -129,12 +134,33 @@ word w_read(Adress adr)
 
 void print_reg()
 {
-    for (int i = 0; i < REG_SIZE; ++i) {
-        trace("R%d = %06o ", i, reg[i]);
-        if (i == 3)
-            trace("\n");
+    for (int i = 0; i < REG_SIZE; i++) {
+        if (i == 6)
+            trace("s: %06o ", reg[i]);
+        else if (i == 7)
+            trace("p: %06o ", reg[i]);
+        else
+            trace("%d: %06o ", i, reg[i]);
     }
     trace("\n");
+}
+
+void print_reg_halted()
+{
+    for (int i = 0; i < REG_SIZE; i += 2) {
+        if (i == 6)
+            printf("sp = %06o ", reg[i]);
+        else
+            printf("R%d = %06o ", i, reg[i]);
+    }
+    printf("\n");
+    for (int i = 1; i < REG_SIZE; i += 2) {
+        if (i == 7)
+            printf("pc = %06o ", reg[i]);
+        else
+            printf("R%d = %06o ", i, reg[i]);
+    }
+    printf("\n");
 }
 
 void print_mem(word start_adr, word end_adr)
@@ -151,10 +177,12 @@ void print_mem(word start_adr, word end_adr)
 
 void trace(char *format, ...)
 {
-    va_list ptr;
-    va_start(ptr, format);
-    vprintf(format, ptr);
-    va_end(ptr);
+    if (trace_flag) {
+        va_list ptr;
+        va_start(ptr, format);
+        vprintf(format, ptr);
+        va_end(ptr);
+    }
 }
 
 int sign(byte b)

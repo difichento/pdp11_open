@@ -1,5 +1,6 @@
 #include "pdp11.h"
 #include <stdio.h>
+#include <string.h>
 
 extern word reg[];
 extern byte mem[];
@@ -104,9 +105,12 @@ void get_nn(word w)
     nn.val = w & 077;
 }
 
-void get_r(word w)
+void get_r(word w, Commands com)
 {
-    r.val = (w >> 6) & 07;
+    if (!strcmp(com.name, "rts"))
+        r.val = w & 7;
+    else
+        r.val = (w >> 6) & 07;
 }
 
 void get_b(word w)
@@ -151,13 +155,13 @@ int need_xx(Commands com)
 
 void run()
 {
-    trace("RUN:\n");
+    trace("----------run----------\n");
     pc = 01000;
-    for (; pc < MEM_SIZE;) {
-
+    w_write(ostat, 0x0000 + 0x80);
+    while (1) {
         word w = w_read(pc);
-        pc += 2;
         trace("%06o %06o: ", pc, w);
+        pc += 2;
         int i = 0;
         while (1) {
             Commands com = comms[i];
@@ -177,7 +181,7 @@ void run()
                 }
 
                 if (need_r(com))
-                    get_r(w);
+                    get_r(w, com);
                 if (need_nn(com))
                     get_nn(w);
                 if (need_xx(com))

@@ -5,6 +5,9 @@
 #define MEM_SIZE 64 * 1024
 #define BYTE_SIZE 8
 #define REG_SIZE 8
+#define ostat 0177564
+#define odata 0177566
+#define sp reg[6]
 
 typedef unsigned char byte;
 typedef unsigned short word;
@@ -46,5 +49,7 @@ void trace(char *format, ...);
 void print_mem(word start_adr, word end_adr);
 
 int sign(byte b);
+
+void print_reg_halted();
 
 #endif

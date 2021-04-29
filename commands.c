@@ -21,11 +21,11 @@ void set_NZ(word value)
     }
 }
 
-void set_ALL(word val2)
+void set_ALL(word val2, int c)
 {
     set_NZ(val2);
     V_flag = 0;
-    C_flag = (val2 >> 16) & 1;
+    C_flag = c;
 
     /*if (((val1 >> 14) & 1) == 1 && ((val2 >> 14) & 1) == 0 && ((val2 >> 15) != (val1 >> 15)))
         V_flag = 1;*/
@@ -35,25 +35,29 @@ void mov()
 {
     if (b_flag.val) {
         b_write(dd.adr, (byte) ss.val);
-        trace("\t\t[%06o] = %06o", ss.adr, (byte) ss.val);
+        trace("\t[%06o] = %06o", ss.adr, (byte) ss.val);
     } else {
         w_write(dd.adr, ss.val);
-        trace("\t\t[%06o] = %06o", ss.adr, ss.val);
+        trace("\t[%06o] = %06o", ss.adr, ss.val);
     }
     set_NZ(w_read(dd.adr));
+    if (dd.adr == odata)
+        printf("\n\n\t\t-----%c-----\n", w_read(odata));
+
+
 }
 
 void halt()
 {
-    trace("\nREG:\n");
-    print_reg();
+    printf("\n----------halted----------\n");
+    print_reg_halted();
     exit(0);
 }
 
 void add()
 {
-    w_write(dd.adr, w_read(dd.adr) + ss.val);
-    set_ALL(w_read(dd.adr) + ss.val);
+    set_ALL(w_read(dd.adr) + ss.val, ((w_read(dd.adr) + ss.val) >> 16) & 1);
+    w_write(dd.adr, (word) (w_read(dd.adr) + ss.val));
     if (dd.adr < 8 && ss.adr < 8)
         trace("\t\tR%o = %o; R%o = %o", ss.adr, ss.val, dd.adr, w_read(dd.adr));
     else if (ss.adr >= 8 && dd.adr < 8)
@@ -71,7 +75,7 @@ void clr()
         b_write(dd.adr, 0);
     else
         w_write(dd.adr, 0);
-    set_ALL(0);
+    set_ALL(0, 0);
 
 }
 
@@ -204,6 +208,24 @@ void tst()
     }
 }
 
+void jsr()
+{
+    word tmp = dd.adr;
+    sp -= 2;
+    w_write(sp, reg[r.val]);
+    reg[r.val] = w_read(pc);
+    pc = tmp;
+    trace(" %06o", r.val);
+}
+
+void rts()
+{
+    pc = reg[r.val];
+    reg[r.val] = w_read(sp);
+    sp += 2;
+    trace("\tr%d: %06o", r.val, reg[r.val]);
+}
+
 void unknown()
 {
 }
@@ -234,6 +256,8 @@ Commands comms[] = {
         {0177400, 0002000, "bge",     bge,     0100000},
         {0177400, 0003400, "ble",     ble,     0100000},*/
         {0007700, 0005700, "tst",     tst,     0000110},
+        {0177000, 0004000, "jsr",     jsr,     0010010},
+        {0177770, 0000200, "rts",     rts,     0010000},
         {0000000, 0000000, "unknown", unknown, 0000000}
 };
 
