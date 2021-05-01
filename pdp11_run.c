@@ -28,7 +28,7 @@ Args get_ss_dd(word w)     // get mode && arg
         case 2:
             res.adr = reg[r];
             res.val = w_read(res.adr);      //  #nn
-            if (b_flag.val)
+            if (b_flag.val && r != 7 && r != 6)
                 reg[r] += 1;
             else
                 reg[r] += 2;
@@ -49,7 +49,7 @@ Args get_ss_dd(word w)     // get mode && arg
                 trace("@(R%o)+ ", r);
             break;
         case 4:
-            if (b_flag.val)
+            if (b_flag.val && r != 7 && r != 6)
                 reg[r] -= 1;
             else
                 reg[r] -= 2;
@@ -89,8 +89,6 @@ Args get_ss_dd(word w)     // get mode && arg
         }
 
     }
-    if (pc % 2 == 1)
-        pc++;
     return res;
 }
 
@@ -119,32 +117,32 @@ void get_xx(word w)
 
 int need_ss(Commands com)
 {
-    return (com.params & 07) == 1;
+    return (com.params & 7);
 }
 
 int need_dd(Commands com)
 {
-    return ((com.params >> 3) & 7) == 1;
+    return ((com.params >> 3) & 1);
 }
 
 int need_b(Commands com)
 {
-    return ((com.params >> 6) & 7) == 1;
+    return ((com.params >> 6) & 1);
 }
 
 int need_nn(Commands com)
 {
-    return ((com.params >> 9) & 7) == 1;
+    return ((com.params >> 9) & 1);
 }
 
 int need_r(Commands com)
 {
-    return ((com.params >> 12) & 7) == 1;
+    return ((com.params >> 12) & 1);
 }
 
 int need_xx(Commands com)
 {
-    return ((com.params >> 15) & 1) == 1;
+    return ((com.params >> 15) & 1);
 }
 
 void run()

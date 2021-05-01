@@ -42,7 +42,7 @@ void mov()
     }
     set_NZ(w_read(dd.adr));
     if (dd.adr == odata)
-        printf("\n\n\t\t-----%c-----\n", w_read(odata));
+        printf("%c", w_read(odata));
 
 
 }
@@ -213,9 +213,9 @@ void jsr()
     word tmp = dd.adr;
     sp -= 2;
     w_write(sp, reg[r.val]);
-    reg[r.val] = w_read(pc);
+    reg[r.val] = pc;
     pc = tmp;
-    trace(" %06o", r.val);
+    trace(" %06o", reg[r.val]);
 }
 
 void rts()
@@ -226,8 +226,25 @@ void rts()
     trace("\tr%d: %06o", r.val, reg[r.val]);
 }
 
+void inc()
+{
+    w_write(dd.adr, dd.val + 1);
+    set_NZ(dd.val + 1);
+}
+
+void rol()
+{
+    int w = dd.val;
+    w = w << 1;
+    w += C_flag;
+    set_ALL((word) w, (w >> 16) & 1);
+    w_write(dd.adr, (word) w);
+}
+
 void unknown()
 {
+    printf("unknown command\n");
+    exit(1);
 }
 
 // params: 0XRNBDS
@@ -258,6 +275,8 @@ Commands comms[] = {
         {0007700, 0005700, "tst",     tst,     0000110},
         {0177000, 0004000, "jsr",     jsr,     0010010},
         {0177770, 0000200, "rts",     rts,     0010000},
+        {0077700, 0005200, "inc",     inc,     0000110},
+        {0077700, 0006100, "rol",     rol,     0000110},
         {0000000, 0000000, "unknown", unknown, 0000000}
 };
 

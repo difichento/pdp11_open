@@ -186,7 +186,7 @@ void trace(char *format, ...)
     if (trace_flag) {
         va_list ptr;
         va_start(ptr, format);
-        vprintf(format, ptr);
+        vfprintf(stderr, format, ptr);
         va_end(ptr);
     }
 }
