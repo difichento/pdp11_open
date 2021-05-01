@@ -42,10 +42,7 @@ Args get_ss_dd(word w)     // get mode && arg
             res.adr = w_read(res.adr);      //  @(Rn)+
             word tmp_for_trace = res.adr;
             res.val = w_read(res.adr);
-            if (b_flag.val)
-                reg[r] += 1;
-            else
-                reg[r] += 2;
+            reg[r] += 2;
             if (r == 7)
                 trace("@#%o ", tmp_for_trace);
             else
@@ -61,10 +58,7 @@ Args get_ss_dd(word w)     // get mode && arg
             trace("-(R%o) ", r);
             break;
         case 5:
-            if (b_flag.val)
-                reg[r] -= 1;
-            else
-                reg[r] -= 2;
+            reg[r] -= 2;
             res.adr = reg[r];
             res.adr = w_read(res.adr);      //  @-(Rn)
             res.val = w_read(res.adr);

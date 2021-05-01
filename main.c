@@ -12,6 +12,7 @@ Args ss, dd, r, nn, b_flag, xx;
 char N_flag, Z_flag, V_flag, C_flag;
 char trace_flag = 0;
 char log_flag = 0;
+char super_trace_flag = 0;
 
 void mem_test()
 {
@@ -76,11 +77,14 @@ int main(int argc, char *argv[])
         if (argv[i][0] == '-') {
             if (argv[i][1] == 't')
                 trace_flag = 1;
-            else if (argv[i][1] == 'l')
+            else if (argv[i][1] == 'T') {
+                super_trace_flag = 1;
+                trace_flag = 1;
+            } else if (argv[i][1] == 'l')
                 log_flag = 1;
             else {
                 printf("unknown flag\n");
-                return 0;
+                return 1;
             }
         } else
             load_file(argv[i]);
@@ -94,12 +98,12 @@ int main(int argc, char *argv[])
 void b_write(Adress adr, byte b)
 {
     if (adr >= 8) {
-        if (adr % 2 == 0) {
+        /*if (adr % 2 == 0) {
             if (sign(b))
                 mem[adr + 1] = -1;
             else
                 mem[adr + 1] = 0;
-        }
+        }*/
         mem[adr] = b;
     } else {
         if (sign(b))
@@ -134,15 +138,17 @@ word w_read(Adress adr)
 
 void print_reg()
 {
-    for (int i = 0; i < REG_SIZE; i++) {
-        if (i == 6)
-            trace("s: %06o ", reg[i]);
-        else if (i == 7)
-            trace("p: %06o ", reg[i]);
-        else
-            trace("%d: %06o ", i, reg[i]);
+    if (super_trace_flag) {
+        for (int i = 0; i < REG_SIZE; i++) {
+            if (i == 6)
+                trace("s: %06o ", reg[i]);
+            else if (i == 7)
+                trace("p: %06o ", reg[i]);
+            else
+                trace("%d: %06o ", i, reg[i]);
+        }
+        trace("\n");
     }
-    trace("\n");
 }
 
 void print_reg_halted()
